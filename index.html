@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zaldo Finance</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Zaldo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+</head>
+<body>
+
+  <!-- Splash (verificando autenticação) -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-brand">
+      <span class="brand-mark">Z</span>
+      <div>
+        <h1 class="logo">Zaldo <span class="logo-fin">Finance</span></h1>
+        <p class="subtitle">Seu dinheiro organizado com estilo</p>
+      </div>
+    </div>
+    <div class="splash-spinner"></div>
+  </div>
+
+  <!-- Tela de Login / Cadastro -->
+  <div class="login-screen hidden" id="loginScreen">
+
+    <!-- Painel esquerdo: branding + preview -->
+    <div class="login-left">
+      <div class="login-left-inner">
+
+        <div class="login-hero-brand">
+          <span class="brand-mark login-brand-mark">Z</span>
+          <div>
+            <div class="login-hero-logo">Zaldo <span class="logo-fin">Finance</span></div>
+            <p class="login-hero-tag">Seu dinheiro, organizado com estilo</p>
+          </div>
+        </div>
+
+        <!-- Preview cards (decorativo) -->
+        <div class="login-preview-wrap">
+          <div class="login-preview-card">
+            <span class="lpc-label">Saldo do mês</span>
+            <span class="lpc-value">R$ 2.340,00</span>
+            <div class="lpc-bar"><div class="lpc-bar-fill" style="width:68%"></div></div>
+            <span class="lpc-sub">68% do salário disponível · No azul ✅</span>
+          </div>
+          <div class="login-preview-card login-preview-card--sm">
+            <span class="lpc-label">Saúde Financeira 🏆</span>
+            <div class="lpc-score-row">
+              <span class="lpc-score">82</span>
+              <span class="lpc-score-label">Excelente</span>
+            </div>
+          </div>
+          <div class="login-preview-card login-preview-card--sm">
+            <span class="lpc-label">Sequência 🔥</span>
+            <div class="lpc-score-row">
+              <span class="lpc-score">3</span>
+              <span class="lpc-score-label">meses no azul</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <ul class="login-feature-list">
+          <li class="login-feature-item">
+            <span class="login-feature-icon">📊</span>
+            <div>
+              <strong>Controle total dos gastos</strong>
+              <p>Categorize receitas e despesas em segundos</p>
+            </div>
+          </li>
+          <li class="login-feature-item">
+            <span class="login-feature-icon">✨</span>
+            <div>
+              <strong>Zaldo IA</strong>
+              <p>Previsões e alertas inteligentes sobre seu orçamento</p>
+            </div>
+          </li>
+          <li class="login-feature-item">
+            <span class="login-feature-icon">☁️</span>
+            <div>
+              <strong>Sincronizado em nuvem</strong>
+              <p>Acesse de qualquer dispositivo, a qualquer hora</p>
+            </div>
+          </li>
+        </ul>
+
+        <p class="login-left-footer">🔒 Gratuito &nbsp;·&nbsp; Seguro &nbsp;·&nbsp; Sempre atualizado</p>
+      </div>
+    </div>
+
+    <!-- Painel direito: formulário -->
+    <div class="login-right">
+      <div class="login-card">
+
+        <!-- Brand (somente mobile) -->
+        <div class="login-brand-mobile">
+          <span class="brand-mark">Z</span>
+          <div>
+            <div class="logo">Zaldo <span class="logo-fin">Finance</span></div>
+            <p class="login-tagline">Seu dinheiro organizado com estilo</p>
+          </div>
+        </div>
+
+        <!-- Google -->
+        <button class="btn-google" id="googleBtn" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continuar com Google
+        </button>
+
+        <div class="login-divider"><span>ou</span></div>
+
+        <div class="login-tabs">
+          <button class="login-tab active" id="loginTabBtn">Entrar</button>
+          <button class="login-tab" id="registerTabBtn">Criar conta</button>
+        </div>
+
+        <!-- Login -->
+        <form class="login-form" id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="loginEmail">E-mail</label>
+            <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Senha</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="forgot-link" id="forgotLink">Esqueci minha senha</button>
+          </div>
+          <p class="login-error hidden" id="loginError"></p>
+          <button type="submit" class="btn-primary btn-full" id="loginSubmitBtn">
+            <span class="btn-label">Entrar na minha conta</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+        </form>
+
+        <!-- Cadastro -->
+        <form class="login-form hidden" id="registerForm" novalidate>
+          <p class="login-form-title">Comece gratuitamente ✨</p>
+          <p class="login-form-sub">Crie sua conta e tenha controle total das suas finanças — é grátis para sempre.</p>
+          <div class="form-group">
+            <label for="regName">Nome completo</label>
+            <input type="text" id="regName" placeholder="Seu nome" autocomplete="name" required>
+          </div>
+          <div class="form-group">
+            <label for="regEmail">E-mail</label>
+            <input type="email" id="regEmail" placeholder="seu@email.com" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Senha</label>
+            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+          </div>
+          <p class="login-error hidden" id="registerError"></p>
+          <button type="submit" class="btn-primary btn-full" id="registerSubmitBtn">
+            <span class="btn-label">Criar minha conta grátis</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+          <p class="login-terms">Ao criar sua conta você concorda com os nossos termos de uso e política de privacidade.</p>
+        </form>
+
+        <!-- Redefinir senha -->
+        <div class="login-form hidden" id="resetForm">
+          <button type="button" class="btn-back" id="resetBack">← Voltar</button>
+          <p class="login-form-title">Redefinir senha 🔑</p>
+          <p class="login-form-sub">Enviaremos um link de redefinição para o seu e-mail.</p>
+          <div class="form-group">
+            <label for="resetEmail">E-mail</label>
+            <input type="email" id="resetEmail" placeholder="seu@email.com" autocomplete="email">
+          </div>
+          <p class="login-error hidden" id="resetError"></p>
+          <p class="login-success hidden" id="resetSuccess">✓ E-mail enviado! Verifique sua caixa de entrada.</p>
+          <button type="button" class="btn-primary btn-full" id="resetSubmitBtn">
+            <span class="btn-label">Enviar link de redefinição</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="app hidden">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-brand">
+        <span class="brand-mark">Z</span>
+        <div>
+          <h1 class="logo">Zaldo <span class="logo-fin">Finance</span></h1>
+          <p class="subtitle">Seu dinheiro organizado com estilo</p>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <nav class="month-nav">
+          <button class="btn-nav" id="prevMonth" aria-label="Mês anterior">&#8249;</button>
+          <span class="month-label" id="monthLabel">Maio 2026</span>
+          <button class="btn-nav" id="nextMonth" aria-label="Próximo mês">&#8250;</button>
+        </nav>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-theme" id="themeToggle" aria-label="Alternar tema">☀️</button>
+        <div class="user-info" id="userInfo">
+          <span class="user-avatar" id="userAvatar">U</span>
+          <span class="user-name" id="userDisplayName"></span>
+          <button class="btn-logout" id="logoutBtn" title="Sair" aria-label="Sair">↪</button>
+        </div>
+        <nav class="main-tabs">
+          <button class="main-tab active" data-tab="lancamentos">Lançamentos</button>
+          <button class="main-tab" data-tab="categorias">Categorias</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ==================== ABA: LANÇAMENTOS ==================== -->
+    <div class="tab-content" id="tabLancamentos">
+
+      <!-- Salário -->
+      <section class="salary-section">
+        <div class="salary-card">
+          <div class="salary-label-group">
+            <span class="salary-eyebrow">Salário Mensal Líquido</span>
+            <p class="salary-hint">Enter ou clique fora para salvar</p>
+          </div>
+          <div class="salary-input-group">
+            <span class="currency">R$</span>
+            <input type="number" id="salaryInput" placeholder="0,00" min="0" step="0.01">
+          </div>
+        </div>
+      </section>
+
+      <!-- Cards de resumo -->
+      <section class="summary-cards">
+        <div class="card card--salary">
+          <div class="card-top">
+            <span class="card-label">Salário</span>
+            <span class="card-badge card-badge--blue">💰</span>
+          </div>
+          <span class="card-value" id="cardSalary">R$ 0,00</span>
+        </div>
+        <div class="card card--expenses">
+          <div class="card-top">
+            <span class="card-label">Total Gastos</span>
+            <span class="card-badge card-badge--red">💸</span>
+          </div>
+          <span class="card-value" id="cardExpenses">R$ 0,00</span>
+        </div>
+        <div class="card card--balance">
+          <div class="card-top">
+            <span class="card-label">Saldo</span>
+            <span class="card-badge card-badge--green">⚖️</span>
+          </div>
+          <span class="card-value" id="cardBalance">R$ 0,00</span>
+        </div>
+        <div class="card card--savings">
+          <div class="card-top">
+            <span class="card-label">Investido</span>
+            <span class="card-badge card-badge--purple">📈</span>
+          </div>
+          <span class="card-value" id="cardSavings">R$ 0,00</span>
+        </div>
+      </section>
+
+      <!-- Barra de progresso -->
+      <section class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Comprometido do salário</span>
+          <span class="progress-value" id="progressPercent">0,0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-markers">
+          <span>0%</span>
+          <span class="marker-warn">70%</span>
+          <span class="marker-danger">90%</span>
+          <span>100%</span>
+        </div>
+      </section>
+
+      <!-- Insights -->
+      <section class="insights-section" id="insightsSection"></section>
+
+      <!-- Zaldo IA -->
+      <section class="ai-section" id="aiSection"></section>
+
+      <!-- Streak + Health Score -->
+      <div class="meta-row">
+        <div class="streak-card">
+          <span class="streak-icon" id="streakIcon">🌱</span>
+          <div class="streak-info">
+            <span class="streak-label">Sequência</span>
+            <span class="streak-value" id="streakValue">—</span>
+            <span class="streak-badge hidden" id="streakBadge"></span>
+            <span class="streak-sub" id="streakSub">calculando...</span>
+          </div>
+        </div>
+        <div class="health-card">
+          <div class="health-score-wrap">
+            <div class="health-header">
+              <span class="health-label">Saúde Financeira</span>
+              <span class="health-value" id="healthValue">—</span>
+            </div>
+            <div class="health-bar-track">
+              <div class="health-bar-fill" id="healthBarFill" style="width:0%"></div>
+            </div>
+            <span class="health-status" id="healthStatus">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico + Lista -->
+      <div class="main-content">
+
+        <div class="chart-card">
+          <h2 class="section-title">Por categoria</h2>
+          <div class="chart-wrapper" id="chartWrapper">
+            <canvas id="expenseChart"></canvas>
+          </div>
+          <div class="chart-empty" id="chartEmpty">
+            <div class="chart-empty-icon">📊</div>
+            <p>Adicione lançamentos para ver a distribuição</p>
+          </div>
+          <div class="category-legend" id="categoryLegend"></div>
+        </div>
+
+        <div class="expense-list-card">
+          <div class="list-header">
+            <h2 class="section-title">Lançamentos</h2>
+            <div class="filter-tabs" id="filterTabs"></div>
+          </div>
+          <ul class="expense-list" id="expenseList">
+            <li class="empty-state">
+              <div class="empty-icon">📋</div>
+              <p>Nenhum lançamento ainda</p>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Formulário -->
+      <section class="add-section">
+        <h2 class="section-title">Novo Lançamento</h2>
+        <form class="expense-form" id="expenseForm" novalidate>
+          <div class="form-row">
+            <div class="form-group fg--desc">
+              <label for="expenseDesc">Descrição</label>
+              <input type="text" id="expenseDesc" placeholder="Ex: Aluguel" maxlength="60" required>
+            </div>
+            <div class="form-group fg--amount">
+              <label for="expenseAmount">Valor (R$)</label>
+              <input type="number" id="expenseAmount" placeholder="0,00" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group fg--cat">
+              <label for="expenseCategory">Categoria</label>
+              <select id="expenseCategory" required></select>
+            </div>
+            <div class="form-group fg--date">
+              <label for="expenseDate">Data</label>
+              <input type="date" id="expenseDate" required>
+            </div>
+            <button type="submit" class="btn-primary">Adicionar</button>
+          </div>
+          <p class="form-error hidden" id="formError">Preencha todos os campos.</p>
+        </form>
+      </section>
+
+      <!-- Ações de histórico -->
+      <div class="history-toggle">
+        <button class="btn-ghost" id="resumoBtn">📊 Resumo do Mês</button>
+        <button class="btn-ghost" id="historyBtn">Ver histórico</button>
+      </div>
+
+    </div><!-- /tabLancamentos -->
+
+    <!-- ==================== ABA: CATEGORIAS ==================== -->
+    <div class="tab-content hidden" id="tabCategorias">
+      <div class="categories-page">
+
+        <section class="cat-section">
+          <div class="cat-section-header">
+            <h2 class="section-title">Padrão</h2>
+            <span class="badge badge--gray">Fixas</span>
+          </div>
+          <p class="section-desc">Não podem ser removidas.</p>
+          <div class="cat-grid" id="defaultCatGrid"></div>
+        </section>
+
+        <section class="cat-section">
+          <div class="cat-section-header">
+            <h2 class="section-title">Minhas Categorias</h2>
+            <span class="badge badge--blue" id="customCatCount">0</span>
+          </div>
+          <p class="section-desc">Categorias criadas por você.</p>
+          <div class="cat-grid" id="customCatGrid"></div>
+        </section>
+
+        <section class="cat-section">
+          <h2 class="section-title" style="margin-bottom:16px">Nova Categoria</h2>
+          <form class="cat-form" id="addCategoryForm" novalidate>
+            <div class="cat-form-row">
+              <div class="form-group">
+                <label for="catName">Nome</label>
+                <input type="text" id="catName" placeholder="Ex: Pets" maxlength="30" required>
+              </div>
+              <div class="form-group fg--icon">
+                <label for="catIcon">Emoji</label>
+                <input type="text" id="catIcon" placeholder="🐾" maxlength="4" class="emoji-input" required>
+              </div>
+              <div class="form-group fg--color">
+                <label for="catColor">Cor</label>
+                <input type="color" id="catColor" value="#6366f1">
+              </div>
+              <div class="preview-wrap">
+                <label>Prévia</label>
+                <div class="cat-preview" id="catPreview">
+                  <span id="catPreviewIcon">?</span>
+                </div>
+              </div>
+              <button type="submit" class="btn-primary">Criar</button>
+            </div>
+            <p class="form-error hidden" id="catFormError">Preencha nome e emoji.</p>
+          </form>
+        </section>
+
+      </div>
+    </div><!-- /tabCategorias -->
+
+  </div><!-- /app -->
+
+  <!-- Modal resumo do mês -->
+  <div class="modal-overlay" id="resumoModal">
+    <div class="modal modal--resumo">
+      <div class="resumo-header">
+        <div class="resumo-header-top">
+          <div>
+            <div class="resumo-month-badge" id="resumoMonthBadge">Maio 2026</div>
+            <h2 class="resumo-title">Resumo do Mês</h2>
+            <p class="resumo-sub">Sua evolução financeira</p>
+          </div>
+          <button class="modal-close" id="resumoClose" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">✕</button>
+        </div>
+      </div>
+      <div class="resumo-body" id="resumoBody"></div>
+    </div>
+  </div>
+
+  <!-- Modal histórico -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Histórico</h2>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body" id="historyBody"></div>
+    </div>
+  </div>
+
+  <!-- FAB (mobile) -->
+  <button class="fab hidden" id="fabBtn" aria-label="Novo lançamento">+</button>
+
+  <!-- Bottom Nav (mobile) -->
+  <nav class="bottom-nav hidden" id="bottomNav">
+    <button class="nav-item active" data-nav="lancamentos">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Início</span>
+    </button>
+    <button class="nav-item" data-nav="categorias">
+      <span class="nav-icon">🏷️</span>
+      <span class="nav-label">Categorias</span>
+    </button>
+    <button class="nav-item" data-nav="historico">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Histórico</span>
+    </button>
+  </nav>
+
+  <!-- Quick-Add Sheet (mobile) -->
+  <div class="sheet-overlay" id="quickAddSheet">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h3>Novo Lançamento</h3>
+        <button class="modal-close" id="sheetClose">✕</button>
+      </div>
+      <form class="sheet-form" id="quickForm" novalidate>
+        <div class="sheet-fields">
+          <div class="form-group">
+            <label for="qDesc">Descrição</label>
+            <input type="text" id="qDesc" placeholder="Ex: Aluguel, Mercado..." maxlength="60" required>
+          </div>
+          <div class="sheet-row">
+            <div class="form-group">
+              <label for="qAmount">Valor (R$)</label>
+              <input type="number" id="qAmount" placeholder="0,00" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="qDate">Data</label>
+              <input type="date" id="qDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="qCategory">Categoria</label>
+            <select id="qCategory" required></select>
+          </div>
+        </div>
+        <p class="form-error hidden" id="sheetError">Preencha todos os campos.</p>
+        <div class="sheet-submit">
+          <button type="submit" class="btn-primary btn-full sheet-btn">Adicionar Lançamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>

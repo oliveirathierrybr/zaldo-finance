@@ -1,0 +1,31 @@
+{
+  "name": "Zaldo Finance",
+  "short_name": "Zaldo",
+  "description": "Seu dinheiro organizado com estilo",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080b10",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo Lançamento",
+      "url": "./",
+      "description": "Registrar um gasto ou investimento"
+    }
+  ]
+}
