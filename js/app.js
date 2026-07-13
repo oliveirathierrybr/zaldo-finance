@@ -285,16 +285,20 @@ function calcDaysInGreen(data) {
 // ─── 7. AUTH HELPERS ──────────────────────────────
 function translateAuthError(code) {
   const map = {
-    'auth/user-not-found':         'E-mail não encontrado.',
-    'auth/wrong-password':         'Senha incorreta.',
-    'auth/email-already-in-use':   'Este e-mail já está em uso.',
-    'auth/weak-password':          'Senha muito fraca (mínimo 6 caracteres).',
-    'auth/invalid-email':          'E-mail inválido.',
-    'auth/invalid-credential':     'E-mail ou senha incorretos.',
-    'auth/too-many-requests':      'Muitas tentativas. Tente novamente mais tarde.',
-    'auth/network-request-failed': 'Sem conexão. Verifique sua internet.',
+    'auth/user-not-found':                     'E-mail não encontrado.',
+    'auth/wrong-password':                     'Senha incorreta.',
+    'auth/email-already-in-use':                'Este e-mail já está em uso.',
+    'auth/weak-password':                       'Senha muito fraca (mínimo 6 caracteres).',
+    'auth/invalid-email':                       'E-mail inválido.',
+    'auth/invalid-credential':                  'E-mail ou senha incorretos.',
+    'auth/too-many-requests':                   'Muitas tentativas. Tente novamente mais tarde.',
+    'auth/network-request-failed':              'Sem conexão. Verifique sua internet.',
+    'auth/unauthorized-domain':                 'Este site ainda não está autorizado a fazer login. Avise o administrador.',
+    'auth/popup-blocked':                       'O navegador bloqueou a janela de login. Permita pop-ups e tente novamente.',
+    'auth/operation-not-allowed':                'Login com Google não está habilitado no momento.',
+    'auth/account-exists-with-different-credential': 'Este e-mail já está cadastrado com outro método de login.',
   };
-  return map[code] || 'Erro ao autenticar. Tente novamente.';
+  return map[code] || `Erro ao autenticar (${code || 'desconhecido'}). Tente novamente.`;
 }
 
 function setLoginLoading(btnId, loading) {
@@ -1154,7 +1158,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await firebase.auth().signInWithPopup(provider);
     } catch (err) {
-      if (err.code !== 'auth/popup-closed-by-user') {
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        console.error('Erro no login com Google:', err.code, err.message);
         showToast(translateAuthError(err.code), 'error');
       }
     }
