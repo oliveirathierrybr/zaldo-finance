@@ -113,6 +113,9 @@ function saveMonth(key, data) {
   dbRef(`months/${key}`).set({
     salary: data.salary || 0,
     ...(Object.keys(expObj).length ? { expenses: expObj } : {}),
+  }).catch(err => {
+    console.error('Erro ao salvar mês:', err);
+    showToast('Erro ao salvar. Verifique sua conexão.', 'error');
   });
 }
 
@@ -121,10 +124,14 @@ function loadCategories() { return toArr(_cache['_cats']); }
 function saveCategories(cats) {
   _cache['_cats'] = [...cats];
   if (!_uid) return;
-  if (!cats.length) { dbRef('categories').remove(); return; }
+  const onError = err => {
+    console.error('Erro ao salvar categorias:', err);
+    showToast('Erro ao salvar. Verifique sua conexão.', 'error');
+  };
+  if (!cats.length) { dbRef('categories').remove().catch(onError); return; }
   const obj = {};
   cats.forEach(c => { obj[c.id] = c; });
-  dbRef('categories').set(obj);
+  dbRef('categories').set(obj).catch(onError);
 }
 
 function loadRecurring() { return toArr(_cache['_recurring']); }
@@ -132,10 +139,14 @@ function loadRecurring() { return toArr(_cache['_recurring']); }
 function saveRecurring(recs) {
   _cache['_recurring'] = [...recs];
   if (!_uid) return;
-  if (!recs.length) { dbRef('recurring').remove(); return; }
+  const onError = err => {
+    console.error('Erro ao salvar recorrentes:', err);
+    showToast('Erro ao salvar. Verifique sua conexão.', 'error');
+  };
+  if (!recs.length) { dbRef('recurring').remove().catch(onError); return; }
   const obj = {};
   recs.forEach(r => { obj[r.id] = r; });
-  dbRef('recurring').set(obj);
+  dbRef('recurring').set(obj).catch(onError);
 }
 
 function loadAllMonths() {

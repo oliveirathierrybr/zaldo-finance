@@ -1,5 +1,5 @@
 /* Zaldo Finance — Service Worker */
-const CACHE = 'zaldo-v10';
+const CACHE = 'zaldo-v11';
 
 const PRECACHE = [
   './',
