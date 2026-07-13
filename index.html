@@ -386,7 +386,8 @@
             <div class="form-group fg--recurring">
               <label class="recurring-toggle" for="expenseRecurring">
                 <input type="checkbox" id="expenseRecurring">
-                <span>🔁 Recorrente</span>
+                <span class="recurring-switch"></span>
+                <span class="recurring-toggle-label">Recorrente</span>
               </label>
             </div>
             <button type="submit" class="btn-primary">Adicionar</button>
@@ -545,10 +546,11 @@
             <label for="qCategory">Categoria</label>
             <select id="qCategory" required></select>
           </div>
-          <div class="form-group">
+          <div class="form-group fg--recurring">
             <label class="recurring-toggle" for="qRecurring">
               <input type="checkbox" id="qRecurring">
-              <span>🔁 Gasto recorrente (repete todo mês)</span>
+              <span class="recurring-switch"></span>
+              <span class="recurring-toggle-label">Gasto recorrente<small>Repete automaticamente todo mês</small></span>
             </label>
           </div>
         </div>
