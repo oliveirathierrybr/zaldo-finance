@@ -1393,6 +1393,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const which = tab.dataset.tab;
       document.getElementById('tabLancamentos').classList.toggle('hidden', which !== 'lancamentos');
       document.getElementById('tabCategorias').classList.toggle('hidden',  which !== 'categorias');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === which));
+      document.getElementById('fabBtn').classList.toggle('hidden', which !== 'lancamentos');
     });
   });
 
@@ -1525,6 +1527,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === nav));
       document.getElementById('tabLancamentos').classList.toggle('hidden', nav !== 'lancamentos');
       document.getElementById('tabCategorias').classList.toggle('hidden',  nav !== 'categorias');
+      document.getElementById('fabBtn').classList.toggle('hidden', nav !== 'lancamentos');
     });
   });
 

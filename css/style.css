@@ -1248,8 +1248,14 @@ body.light .ai--danger:hover   { background: rgba(239,68,68,0.06); }
   .salary-input-group input { width: 150px; font-size: 22px; }
   .history-stats { grid-template-columns: repeat(2, 1fr); }
   .cat-grid      { grid-template-columns: repeat(2, 1fr); }
-  .cat-form-row  { flex-direction: column; }
-  .fg--icon, .fg--color { flex: 1; }
+
+  /* Nova categoria: grade 2 colunas — Nome (full), Emoji|Cor, Prévia centralizada, Botão */
+  .cat-form-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+  .fg--name      { grid-column: 1 / -1; }
+  .fg--icon      { grid-column: 1; flex: unset; }
+  .fg--color     { grid-column: 2; flex: unset; }
+  .preview-wrap  { grid-column: 1 / -1; }
+  .cat-form-row .btn-primary { grid-column: 1 / -1; }
   .main-tabs     { width: 100%; }
   .main-tab      { flex: 1; font-size: 12px; padding: 8px; }
   .header-actions { width: 100%; justify-content: flex-end; }
