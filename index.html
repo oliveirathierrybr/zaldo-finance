@@ -383,6 +383,12 @@
               <label for="expenseDate">Data</label>
               <input type="date" id="expenseDate" required>
             </div>
+            <div class="form-group fg--recurring">
+              <label class="recurring-toggle" for="expenseRecurring">
+                <input type="checkbox" id="expenseRecurring">
+                <span>🔁 Recorrente</span>
+              </label>
+            </div>
             <button type="submit" class="btn-primary">Adicionar</button>
           </div>
           <p class="form-error hidden" id="formError">Preencha todos os campos.</p>
@@ -393,6 +399,7 @@
       <div class="history-toggle">
         <button class="btn-ghost" id="resumoBtn">📊 Resumo do Mês</button>
         <button class="btn-ghost" id="historyBtn">Ver histórico</button>
+        <button class="btn-ghost" id="recurringBtn">🔁 Recorrentes</button>
       </div>
 
     </div><!-- /tabLancamentos -->
@@ -480,6 +487,17 @@
     </div>
   </div>
 
+  <!-- Modal recorrentes -->
+  <div class="modal-overlay" id="recurringModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Gastos Recorrentes</h2>
+        <button class="modal-close" id="recurringModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="recurringBody"></div>
+    </div>
+  </div>
+
   <!-- FAB (mobile) -->
   <button class="fab hidden" id="fabBtn" aria-label="Novo lançamento">+</button>
 
@@ -526,6 +544,12 @@
           <div class="form-group">
             <label for="qCategory">Categoria</label>
             <select id="qCategory" required></select>
+          </div>
+          <div class="form-group">
+            <label class="recurring-toggle" for="qRecurring">
+              <input type="checkbox" id="qRecurring">
+              <span>🔁 Gasto recorrente (repete todo mês)</span>
+            </label>
           </div>
         </div>
         <p class="form-error hidden" id="sheetError">Preencha todos os campos.</p>

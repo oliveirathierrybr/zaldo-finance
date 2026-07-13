@@ -19,6 +19,7 @@
    13.  CRUD lançamentos
    14.  Modal — Resumo do Mês
    15.  Modal — Histórico
+   15b. Modal — Recorrentes
    16.  Init & eventos
    ===================================================== */
 
@@ -126,10 +127,21 @@ function saveCategories(cats) {
   dbRef('categories').set(obj);
 }
 
+function loadRecurring() { return toArr(_cache['_recurring']); }
+
+function saveRecurring(recs) {
+  _cache['_recurring'] = [...recs];
+  if (!_uid) return;
+  if (!recs.length) { dbRef('recurring').remove(); return; }
+  const obj = {};
+  recs.forEach(r => { obj[r.id] = r; });
+  dbRef('recurring').set(obj);
+}
+
 function loadAllMonths() {
   return Object.fromEntries(
     Object.entries(_cache)
-      .filter(([k]) => k !== '_cats')
+      .filter(([k]) => k !== '_cats' && k !== '_recurring')
       .map(([k])    => [k, loadMonth(k)])
       .sort(([a], [b]) => b.localeCompare(a))
   );
@@ -147,7 +159,8 @@ async function loadUserData(uid) {
       };
     });
   }
-  _cache['_cats'] = raw.categories ? toArr(raw.categories) : [];
+  _cache['_cats']      = raw.categories ? toArr(raw.categories) : [];
+  _cache['_recurring'] = raw.recurring  ? toArr(raw.recurring)  : [];
 }
 
 
@@ -458,7 +471,7 @@ function updateExpenseList(expenses) {
           <div class="expense-cat-icon" style="background:${colorBg(cat.color)}">${cat.icon}</div>
           <div class="expense-info">
             <div class="expense-desc">${escapeHtml(exp.description)}</div>
-            <div class="expense-meta">${cat.name}${exp.date ? ' · ' + fmtDate(exp.date) : ''}</div>
+            <div class="expense-meta">${cat.name}${exp.date ? ' · ' + fmtDate(exp.date) : ''}${exp.recurringId ? ' · 🔁 Recorrente' : ''}</div>
           </div>
           <div class="expense-amount">${fmtCurrency(exp.amount)}</div>
           <button class="expense-delete" data-id="${exp.id}" title="Remover">✕</button>
@@ -791,15 +804,32 @@ function deleteCustomCategory(id) {
 
 
 // ─── 13. CRUD LANÇAMENTOS ─────────────────────────
-function addExpense(description, amount, category, date) {
-  monthData.expenses = monthData.expenses || [];
-  monthData.expenses.push({
+function addExpense(description, amount, category, date, isRecurring = false) {
+  const expense = {
     id: Date.now(),
     description: description.trim(),
     amount: parseFloat(amount),
     category,
     date,
-  });
+  };
+
+  if (isRecurring) {
+    const rule = {
+      id: `rec_${Date.now()}`,
+      description: expense.description,
+      amount: expense.amount,
+      category,
+      active: true,
+      startMonth: getMonthKey(currentDate),
+    };
+    const recs = loadRecurring();
+    recs.push(rule);
+    saveRecurring(recs);
+    expense.recurringId = rule.id;
+  }
+
+  monthData.expenses = monthData.expenses || [];
+  monthData.expenses.push(expense);
   render();
   saveMonth(getMonthKey(currentDate), monthData);
 }
@@ -808,6 +838,41 @@ function deleteExpense(id) {
   monthData.expenses = (monthData.expenses || []).filter(e => String(e.id) !== String(id));
   render();
   saveMonth(getMonthKey(currentDate), monthData);
+}
+
+function applyRecurringToMonth(key) {
+  const data = loadMonth(key);
+  const recs = loadRecurring().filter(r => r.active && key >= r.startMonth);
+  if (!recs.length) return data;
+
+  data.expenses = data.expenses || [];
+  let changed = false;
+
+  recs.forEach((rule, i) => {
+    if (data.expenses.some(e => e.recurringId === rule.id)) return;
+    data.expenses.push({
+      id: Date.now() + i,
+      description: rule.description,
+      amount: rule.amount,
+      category: rule.category,
+      date: `${key}-01`,
+      recurringId: rule.id,
+    });
+    changed = true;
+  });
+
+  if (changed) saveMonth(key, data);
+  return data;
+}
+
+function stopRecurring(id) {
+  const recs = loadRecurring();
+  const rule = recs.find(r => r.id === id);
+  if (!rule) return;
+  rule.active = false;
+  saveRecurring(recs);
+  buildRecurringList();
+  showToast('Recorrência interrompida.');
 }
 
 
@@ -946,6 +1011,42 @@ function buildHistory() {
 }
 
 
+// ─── 15b. MODAL — RECORRENTES ─────────────────────
+function buildRecurringList() {
+  const body = document.getElementById('recurringBody');
+  const recs = loadRecurring().filter(r => r.active);
+  const cats = getAllCategories();
+
+  if (!recs.length) {
+    body.innerHTML = '<p style="color:var(--text-3);text-align:center;padding:32px">Nenhum gasto recorrente ativo.</p>';
+    return;
+  }
+
+  body.innerHTML = recs.map(r => {
+    const cat = cats[r.category] || cats.outros;
+    return `
+      <div class="history-month-item recurring-item">
+        <div class="history-month-name">${cat.icon} ${escapeHtml(r.description)}</div>
+        <div class="history-stats recurring-stats">
+          <div>
+            <div class="history-stat-label">Valor mensal</div>
+            <div class="history-stat-value">${fmtCurrency(r.amount)}</div>
+          </div>
+          <div>
+            <div class="history-stat-label">Categoria</div>
+            <div class="history-stat-value">${cat.name}</div>
+          </div>
+        </div>
+        <button class="btn-ghost recurring-stop" data-id="${r.id}">Parar recorrência</button>
+      </div>`;
+  }).join('');
+
+  body.querySelectorAll('.recurring-stop').forEach(btn => {
+    btn.addEventListener('click', () => stopRecurring(btn.dataset.id));
+  });
+}
+
+
 // ─── 16. INIT & EVENTOS ───────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -960,7 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       customCategories = loadCategories();
-      monthData        = loadMonth(getMonthKey(currentDate));
+      monthData        = applyRecurringToMonth(getMonthKey(currentDate));
 
       document.getElementById('expenseDate').value = todayISO();
       rebuildCategoryDropdown();
@@ -1120,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showSkeleton();
     currentDate  = new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1);
     activeFilter = 'all';
-    monthData    = loadMonth(getMonthKey(currentDate));
+    monthData    = applyRecurringToMonth(getMonthKey(currentDate));
     render();
     calcAndRenderStreak();
   }
@@ -1142,12 +1243,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Formulário de lançamento ──
   document.getElementById('expenseForm').addEventListener('submit', e => {
     e.preventDefault();
-    const desc     = document.getElementById('expenseDesc');
-    const amount   = document.getElementById('expenseAmount');
-    const category = document.getElementById('expenseCategory');
-    const date     = document.getElementById('expenseDate');
-    const errEl    = document.getElementById('formError');
-    let valid      = true;
+    const desc      = document.getElementById('expenseDesc');
+    const amount    = document.getElementById('expenseAmount');
+    const category  = document.getElementById('expenseCategory');
+    const date      = document.getElementById('expenseDate');
+    const recurring = document.getElementById('expenseRecurring');
+    const errEl     = document.getElementById('formError');
+    let valid       = true;
 
     [desc, amount, category, date].forEach(el => el.classList.remove('invalid'));
     if (!desc.value.trim())                  { desc.classList.add('invalid');     valid = false; }
@@ -1158,11 +1260,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!valid) { errEl.classList.remove('hidden'); return; }
     errEl.classList.add('hidden');
 
-    addExpense(desc.value, amount.value, category.value, date.value);
+    const wasRecurring = recurring.checked;
+    addExpense(desc.value, amount.value, category.value, date.value, wasRecurring);
     desc.value = ''; amount.value = ''; category.value = '';
     date.value = todayISO();
+    recurring.checked = false;
     desc.focus();
-    showToast('Lançamento adicionado!');
+    showToast(wasRecurring ? 'Lançamento recorrente adicionado!' : 'Lançamento adicionado!');
   });
 
   ['expenseDesc', 'expenseAmount', 'expenseCategory', 'expenseDate'].forEach(id => {
@@ -1239,11 +1343,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
   });
 
+  // ── Modal recorrentes ──
+  document.getElementById('recurringBtn').addEventListener('click', () => {
+    document.getElementById('recurringModal').classList.add('open');
+    buildRecurringList();
+  });
+  document.getElementById('recurringModalClose').addEventListener('click', () => {
+    document.getElementById('recurringModal').classList.remove('open');
+  });
+  document.getElementById('recurringModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+  });
+
   // ── Fechar modais com Escape ──
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     document.getElementById('historyModal').classList.remove('open');
     document.getElementById('resumoModal').classList.remove('open');
+    document.getElementById('recurringModal').classList.remove('open');
   });
 
   // ── Quick-Add Sheet ──
@@ -1268,11 +1385,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('quickForm').addEventListener('submit', e => {
     e.preventDefault();
-    const desc     = document.getElementById('qDesc');
-    const amount   = document.getElementById('qAmount');
-    const category = document.getElementById('qCategory');
-    const date     = document.getElementById('qDate');
-    const errEl    = document.getElementById('sheetError');
+    const desc      = document.getElementById('qDesc');
+    const amount    = document.getElementById('qAmount');
+    const category  = document.getElementById('qCategory');
+    const date      = document.getElementById('qDate');
+    const recurring = document.getElementById('qRecurring');
+    const errEl     = document.getElementById('sheetError');
     let valid = true;
 
     [desc, amount, category, date].forEach(el => el.classList.remove('invalid'));
@@ -1284,9 +1402,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!valid) { errEl.classList.remove('hidden'); return; }
     errEl.classList.add('hidden');
 
-    addExpense(desc.value, amount.value, category.value, date.value);
+    const wasRecurring = recurring.checked;
+    addExpense(desc.value, amount.value, category.value, date.value, wasRecurring);
     closeSheet();
-    showToast('Lançamento adicionado! ✓');
+    showToast(wasRecurring ? 'Lançamento recorrente adicionado! ✓' : 'Lançamento adicionado! ✓');
   });
 
   // ── Navegação inferior (mobile) ──
