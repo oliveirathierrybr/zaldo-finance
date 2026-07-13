@@ -142,10 +142,14 @@
           <div class="form-group">
             <label for="loginEmail">E-mail</label>
             <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email" required>
+            <span class="field-hint hidden" id="loginEmailHint">E-mail inválido.</span>
           </div>
           <div class="form-group">
             <label for="loginPassword">Senha</label>
-            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
+            <div class="password-field">
+              <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
+              <button type="button" class="password-toggle" id="loginPasswordToggle" tabindex="-1" aria-label="Mostrar senha">👁️</button>
+            </div>
             <button type="button" class="forgot-link" id="forgotLink">Esqueci minha senha</button>
           </div>
           <p class="login-error hidden" id="loginError"></p>
@@ -166,10 +170,18 @@
           <div class="form-group">
             <label for="regEmail">E-mail</label>
             <input type="email" id="regEmail" placeholder="seu@email.com" autocomplete="email" required>
+            <span class="field-hint hidden" id="regEmailHint">E-mail inválido.</span>
           </div>
           <div class="form-group">
             <label for="regPassword">Senha</label>
-            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+            <div class="password-field">
+              <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+              <button type="button" class="password-toggle" id="regPasswordToggle" tabindex="-1" aria-label="Mostrar senha">👁️</button>
+            </div>
+            <div class="pwd-strength hidden" id="regPwdStrength">
+              <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="regPwdStrengthFill"></div></div>
+              <span class="pwd-strength-label" id="regPwdStrengthLabel"></span>
+            </div>
           </div>
           <p class="login-error hidden" id="registerError"></p>
           <button type="submit" class="btn-primary btn-full" id="registerSubmitBtn">
@@ -187,9 +199,10 @@
           <div class="form-group">
             <label for="resetEmail">E-mail</label>
             <input type="email" id="resetEmail" placeholder="seu@email.com" autocomplete="email">
+            <span class="field-hint hidden" id="resetEmailHint">E-mail inválido.</span>
           </div>
           <p class="login-error hidden" id="resetError"></p>
-          <p class="login-success hidden" id="resetSuccess">✓ E-mail enviado! Verifique sua caixa de entrada.</p>
+          <p class="login-success hidden" id="resetSuccess">✓ E-mail enviado! Verifique sua caixa de entrada (e a pasta de spam).</p>
           <button type="button" class="btn-primary btn-full" id="resetSubmitBtn">
             <span class="btn-label">Enviar link de redefinição</span>
             <span class="btn-spinner hidden"></span>

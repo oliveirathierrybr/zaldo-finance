@@ -305,6 +305,68 @@ function setLoginLoading(btnId, loading) {
   btn.querySelector('.btn-spinner').classList.toggle('hidden', !loading);
 }
 
+function isValidEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+function setupEmailValidation(inputId, hintId) {
+  const input = document.getElementById(inputId);
+  const hint  = document.getElementById(hintId);
+  input.addEventListener('blur', () => {
+    const val = input.value.trim();
+    if (val && !isValidEmail(val)) {
+      input.classList.add('invalid');
+      hint.classList.remove('hidden');
+    }
+  });
+  input.addEventListener('input', () => {
+    input.classList.remove('invalid');
+    hint.classList.add('hidden');
+  });
+}
+
+function setupPasswordToggle(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const btn   = document.getElementById(btnId);
+  btn.addEventListener('click', () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁️';
+    btn.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
+  });
+}
+
+function calcPasswordStrength(pwd) {
+  if (!pwd) return null;
+  let score = 0;
+  if (pwd.length >= 6)                          score++;
+  if (pwd.length >= 10)                         score++;
+  if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd))   score++;
+  if (/\d/.test(pwd))                           score++;
+  if (/[^A-Za-z0-9]/.test(pwd))                 score++;
+
+  if (score <= 1) return { level: 'weak',   label: 'Fraca',  pct: 33  };
+  if (score <= 3) return { level: 'medium', label: 'Média',  pct: 66  };
+  return          { level: 'strong', label: 'Forte', pct: 100 };
+}
+
+function setupPasswordStrength(inputId, wrapId, fillId, labelId) {
+  const input = document.getElementById(inputId);
+  const wrap  = document.getElementById(wrapId);
+  const fill  = document.getElementById(fillId);
+  const label = document.getElementById(labelId);
+
+  input.addEventListener('input', () => {
+    const strength = calcPasswordStrength(input.value);
+    wrap.classList.toggle('hidden', !strength);
+    if (!strength) return;
+    fill.className  = `pwd-strength-fill ${strength.level}`;
+    fill.style.width = `${strength.pct}%`;
+    label.className  = `pwd-strength-label ${strength.level}`;
+    label.textContent = strength.label;
+  });
+}
+
 function showLoginUI() {
   document.getElementById('splashScreen').classList.add('hidden');
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -1099,12 +1161,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Esqueci minha senha ──
+  let resetCooldownTimer = null;
+
+  function resetCooldownLabel(text) {
+    document.getElementById('resetSubmitBtn').querySelector('.btn-label').textContent = text;
+  }
+
+  function startResetCooldown(seconds = 30) {
+    const btn = document.getElementById('resetSubmitBtn');
+    let remaining = seconds;
+    btn.disabled = true;
+    resetCooldownLabel(`Reenviar em ${remaining}s`);
+    clearInterval(resetCooldownTimer);
+    resetCooldownTimer = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(resetCooldownTimer);
+        btn.disabled = false;
+        resetCooldownLabel('Reenviar link');
+      } else {
+        resetCooldownLabel(`Reenviar em ${remaining}s`);
+      }
+    }, 1000);
+  }
+
   function showResetForm() {
     document.getElementById('loginForm').classList.add('hidden');
     document.getElementById('registerForm').classList.add('hidden');
     document.getElementById('resetForm').classList.remove('hidden');
     document.getElementById('loginTabBtn').classList.remove('active');
     document.getElementById('resetEmail').value = document.getElementById('loginEmail').value;
+    document.getElementById('resetEmail').classList.remove('invalid');
+    document.getElementById('resetEmailHint').classList.add('hidden');
     document.getElementById('resetError').classList.add('hidden');
     document.getElementById('resetSuccess').classList.add('hidden');
   }
@@ -1124,10 +1212,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sucEl = document.getElementById('resetSuccess');
 
     errEl.classList.add('hidden');
-    sucEl.classList.add('hidden');
 
     if (!email) {
       errEl.textContent = 'Informe seu e-mail.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      errEl.textContent = 'E-mail inválido.';
       errEl.classList.remove('hidden');
       return;
     }
@@ -1136,12 +1228,23 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await firebase.auth().sendPasswordResetEmail(email);
       sucEl.classList.remove('hidden');
+      setLoginLoading('resetSubmitBtn', false);
+      startResetCooldown();
+      return;
     } catch (err) {
       errEl.textContent = translateAuthError(err.code);
       errEl.classList.remove('hidden');
     }
     setLoginLoading('resetSubmitBtn', false);
   });
+
+  // ── Mostrar/ocultar senha, validação de e-mail e força de senha ──
+  setupPasswordToggle('loginPassword', 'loginPasswordToggle');
+  setupPasswordToggle('regPassword',   'regPasswordToggle');
+  setupEmailValidation('loginEmail', 'loginEmailHint');
+  setupEmailValidation('regEmail',   'regEmailHint');
+  setupEmailValidation('resetEmail', 'resetEmailHint');
+  setupPasswordStrength('regPassword', 'regPwdStrength', 'regPwdStrengthFill', 'regPwdStrengthLabel');
 
   // ── Login form ──
   document.getElementById('loginForm').addEventListener('submit', async e => {

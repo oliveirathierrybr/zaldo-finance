@@ -1722,6 +1722,30 @@ body.light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
 
 .login-form input::placeholder { color: var(--text-3); }
 
+.field-hint { display: block; margin-top: 6px; font-size: 11px; font-weight: 600; color: var(--danger); }
+
+.password-field { position: relative; }
+.password-field input { padding-right: 44px; }
+.password-toggle {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  font-size: 15px; line-height: 1; padding: 8px;
+  color: var(--text-3); border-radius: var(--radius-xs);
+  transition: color 0.2s, background 0.2s;
+}
+.password-toggle:hover { color: var(--text-2); background: var(--glass-hover); }
+
+.pwd-strength      { margin-top: 8px; }
+.pwd-strength-bar  { height: 4px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.pwd-strength-fill { height: 100%; width: 0%; border-radius: 999px; transition: width 0.25s ease, background 0.25s ease; }
+.pwd-strength-label { display: block; margin-top: 5px; font-size: 11px; font-weight: 700; }
+.pwd-strength-fill.weak    { background: var(--danger); }
+.pwd-strength-fill.medium  { background: #f59e0b; }
+.pwd-strength-fill.strong  { background: var(--success); }
+.pwd-strength-label.weak   { color: var(--danger); }
+.pwd-strength-label.medium { color: #f59e0b; }
+.pwd-strength-label.strong { color: var(--success); }
+
 .login-terms {
   font-size: 11px;
   color: var(--text-3);
@@ -1912,6 +1936,8 @@ body.light .login-tabs     { background: rgba(0,0,0,0.06); }
 body.light .login-tab      { color: #64748b; }
 body.light .login-form input { background: #fff; border-color: rgba(0,0,0,0.12); color: #0f172a; }
 body.light .login-form input::placeholder { color: #94a3b8; }
+body.light .password-toggle:hover { background: rgba(0,0,0,0.06); }
+body.light .pwd-strength-bar { background: rgba(0,0,0,0.08); }
 body.light .login-form-title { color: #0f172a; }
 body.light .splash-screen  { background: #f8fafc; }
 body.light .user-name      { color: #0f172a; }
